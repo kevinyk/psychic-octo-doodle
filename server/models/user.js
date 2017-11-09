@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-var bcryptP = require('bcrypt-as-promised');
+var bcrypt = require('bcrypt');
 var UserSchema = mongoose.Schema({
 	name:{type:String},
 	email: {type: String, unique:true},
@@ -25,13 +25,17 @@ var UserSchema = mongoose.Schema({
 })
 
 UserSchema.pre('save', function(next){
-	var user = this;
 	console.log("this:", this);
-	bcryptP.hash(user.password, 10)
-	.then((hashed_password)=>{
-		console.log("hashed_password", hashed_password);
-		user.password = hashed_password;
-		next();
-	})
+	var user = this;
+	bcrypt.hash(this.password, 10, function(err, hashed_password) {
+	  // Store hash in your password DB.
+	  if(err){
+	  	console.log(err);
+	  }else{
+	  	console.log(hashed_password);
+	  	user.password = hashed_password;
+	  	next();
+	  }
+	});
 })
 mongoose.model('User', UserSchema);
